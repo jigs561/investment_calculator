@@ -70,11 +70,14 @@ if st.button("Calculate"):
     # 1. Average cost per share
     avg_cost_per_share = total_contribution / total_shares if total_shares > 0 else 0
 
-    # 2. Total dividends received in the last year
-    one_year_ago = df.index[-1] - pd.DateOffset(years=1)
-    df_last_year = df[df.index >= one_year_ago]
-    dividends_last_year = df_last_year['Dividends'] * df_last_year['cumulative_shares'].shift(1)
-    dividends_last_year = dividends_last_year.fillna(0).sum()
+    # Get dividend yield from Yahoo
+    info = yf.Ticker(ticker).info
+    dividend_yield = info.get("dividendYield", 0)
+
+    # Estimate annual dividends
+    estimated_annual_dividends = (dividend_yield * total_value)/100 if dividend_yield else 0
+    effective_dividend_yield = estimated_annual_dividends / total_contribution if total_contribution > 0 else 0
+
 
     st.subheader("Summary") 
     st.write(f"📈 **Total Shares Accumulated**: {total_shares:.2f}")
@@ -82,6 +85,7 @@ if st.button("Calculate"):
     st.write(f"💸 **Total Contribution**: ${total_contribution:,.2f}")
     st.write(f"🔁 **Total Dividends Reinvested**: ${total_dividends:,.2f}")
     st.write(f"💵 **Average Cost per Share**: ${avg_cost_per_share:,.2f}")
-    st.write(f"📅 **Dividends Paid in the Last Year**: ${dividends_last_year:,.2f}")
+    st.write(f"📅 **Estimated Annual Dividends** (based on current yield): ${estimated_annual_dividends:,.2f} ({dividend_yield:.2f}%)")
+    st.write(f"📈 **Effective Dividend Yield (on cost)**: {effective_dividend_yield*100:.2f}%")
     st.write(f"📊 **Total Return**: ${total_value - total_contribution:,.2f} ({(total_value / total_contribution - 1) * 100:.2f}%)")
     st.dataframe(df.iloc[::-1])
