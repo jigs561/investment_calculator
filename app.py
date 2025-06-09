@@ -51,6 +51,9 @@ if st.button("Calculate"):
         ax1.set_xlabel("Date")
         ax1.set_ylabel("Shares")
         ax1.grid(True, linestyle="--", alpha=0.7)
+        ax1.text(0.05, 0.95, f'Total Shares: {total_shares:.2f}\nTotal Value: ${total_value:,.2f}',
+            transform=ax1.transAxes, verticalalignment='top',
+            bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
         st.pyplot(fig1)
 
     with col2:
@@ -60,11 +63,25 @@ if st.button("Calculate"):
         ax2.set_xlabel("Date")
         ax2.set_ylabel("Price")
         ax2.grid(True, linestyle="--", alpha=0.7)
+        ax2.text(0.05, 0.95, f'Total Contribution: ${total_contribution:,.2f}\nTotal Dividends Reinvested: ${total_dividends:,.2f}',
+            transform=ax2.transAxes, verticalalignment='top',
+            bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
         st.pyplot(fig2)
+    # 1. Average cost per share
+    avg_cost_per_share = total_contribution / total_shares if total_shares > 0 else 0
 
-    st.subheader("Summary")
+    # 2. Total dividends received in the last year
+    one_year_ago = df.index[-1] - pd.DateOffset(years=1)
+    df_last_year = df[df.index >= one_year_ago]
+    dividends_last_year = df_last_year['Dividends'] * df_last_year['cumulative_shares'].shift(1)
+    dividends_last_year = dividends_last_year.fillna(0).sum()
+
+    st.subheader("Summary") 
     st.write(f"📈 **Total Shares Accumulated**: {total_shares:.2f}")
     st.write(f"💰 **Total Portfolio Value**: ${total_value:,.2f}")
     st.write(f"💸 **Total Contribution**: ${total_contribution:,.2f}")
     st.write(f"🔁 **Total Dividends Reinvested**: ${total_dividends:,.2f}")
+    st.write(f"💵 **Average Cost per Share**: ${avg_cost_per_share:,.2f}")
+    st.write(f"📅 **Dividends Paid in the Last Year**: ${dividends_last_year:,.2f}")
     st.write(f"📊 **Total Return**: ${total_value - total_contribution:,.2f} ({(total_value / total_contribution - 1) * 100:.2f}%)")
+    st.dataframe(df.iloc[::-1])
