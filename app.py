@@ -17,7 +17,7 @@ if st.button("Calculate"):
     df = yf.Ticker(ticker).history(period=period, interval="1mo")
     df['Close'] = pd.to_numeric(df['Close'], errors='coerce')
     df['Dividends'] = pd.to_numeric(df['Dividends'], errors='coerce')
-    df['Close'] = df['Close'].fillna(method='ffill')
+    df['Close'] = df['Close'].ffill()
 
     df['cumulative_shares'] = 0.0
     df['investment_amount'] = float(monthly_contribution)
